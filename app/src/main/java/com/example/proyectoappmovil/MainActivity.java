@@ -17,9 +17,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
 
-    FirebaseAuth mAuth;
-    TextView textViewWelcome;
-    Button buttonLogout;
+    Button buttonSenderismo, buttonCiclismo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,24 +30,13 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        mAuth = FirebaseAuth.getInstance();
-        textViewWelcome = findViewById(R.id.textViewWelcome);
-        buttonLogout = findViewById(R.id.buttonLogout);
+        buttonSenderismo = findViewById(R.id.buttonSenderismo);
+        buttonCiclismo = findViewById(R.id.buttonCiclismo);
 
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) {
-
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            finish();
-        } else {
-            textViewWelcome.setText("¡Bienvenido!");
-        }
-
-        buttonLogout.setOnClickListener(v -> {
-            mAuth.signOut();
-            Toast.makeText(MainActivity.this, "Sesión cerrada.", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            finish();
+        buttonCiclismo.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, CiclismoActivity.class);
+            startActivity(intent);
         });
+
     }
 }
