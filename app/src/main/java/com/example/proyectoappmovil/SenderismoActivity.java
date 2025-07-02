@@ -1,7 +1,6 @@
 package com.example.proyectoappmovil;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -18,18 +17,18 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CiclismoActivity extends AppCompatActivity {
+public class SenderismoActivity extends AppCompatActivity {
 
     RecyclerView miRecycler;
     miAdapter miAdapter;
-    List<Ruta> listaRutasCiclismo;
+    List<Ruta> listaRutasSenderismo;
     FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_ciclismo);
+        setContentView(R.layout.activity_senderismo);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -37,33 +36,34 @@ public class CiclismoActivity extends AppCompatActivity {
         });
 
         db = FirebaseFirestore.getInstance();
-        miRecycler = findViewById(R.id.miRecycler);
+        miRecycler = findViewById(R.id.miRecyclerSenderismo);
         miRecycler.setLayoutManager(new LinearLayoutManager(this));
-        listaRutasCiclismo = new ArrayList<>();
-        miAdapter = new miAdapter(listaRutasCiclismo, this);
+        listaRutasSenderismo = new ArrayList<>();
+        miAdapter = new miAdapter(listaRutasSenderismo, this);
         miRecycler.setAdapter(miAdapter);
 
-        cargarRutasCiclismo();
+        cargarRutasSenderismo();
+
     }
 
-    private void cargarRutasCiclismo() {
+    private void cargarRutasSenderismo() {
         db.collection("rutas")
-                .whereEqualTo("tipo", "ciclismo")
+                .whereEqualTo("tipo", "senderismo")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        listaRutasCiclismo.clear();
+                        listaRutasSenderismo.clear();
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Ruta ruta = document.toObject(Ruta.class);
                             ruta.setId(document.getId());
-                            listaRutasCiclismo.add(ruta);
+                            listaRutasSenderismo.add(ruta);
                         }
-                        miAdapter.setRutas(listaRutasCiclismo);
-                        if (listaRutasCiclismo.isEmpty()) {
-                            Toast.makeText(CiclismoActivity.this, "No se tienen rutas.", Toast.LENGTH_LONG).show();
+                        miAdapter.setRutas(listaRutasSenderismo);
+                        if (listaRutasSenderismo.isEmpty()) {
+                            Toast.makeText(SenderismoActivity.this, "No se tienen rutas de senderismo.", Toast.LENGTH_LONG).show();
                         }
                     } else {
-                        Toast.makeText(CiclismoActivity.this, "Error al cargar rutas.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SenderismoActivity.this, "Error al cargar rutas.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }

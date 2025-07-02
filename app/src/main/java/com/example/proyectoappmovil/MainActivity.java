@@ -38,5 +38,10 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        buttonSenderismo.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SenderismoActivity.class);
+            startActivity(intent);
+        });
+
     }
 }
