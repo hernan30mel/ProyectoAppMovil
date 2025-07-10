@@ -12,16 +12,25 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.List;
 
 public class miAdapter extends RecyclerView.Adapter<miAdapter.miViewHolder> {
 
     List<Ruta> misRutas;
     Context context;
+    FirebaseFirestore db;
+    FirebaseUser currentUser;
 
     public miAdapter(List<Ruta> misRutas, Context context) {
         this.misRutas = misRutas;
         this.context = context;
+        this.db = FirebaseFirestore.getInstance();
+        this.currentUser = FirebaseAuth.getInstance().getCurrentUser();
     }
 
     public void setRutas(List<Ruta> nuevasRutas) {
@@ -40,6 +49,8 @@ public class miAdapter extends RecyclerView.Adapter<miAdapter.miViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull miAdapter.miViewHolder holder, int position) {
         Ruta ruta = misRutas.get(position);
+        if (ruta == null) return;
+
         holder.tvNombreRuta.setText(ruta.getNombre());
         holder.tvDistanciaDificultad.setText("Distancia: " + ruta.getDistancia() + " km | Dificultad: " + ruta.getDificultad());
 
@@ -54,29 +65,39 @@ public class miAdapter extends RecyclerView.Adapter<miAdapter.miViewHolder> {
             context.startActivity(Intent.createChooser(shareIntent, "Compartir vía"));
         });
 
-        holder.buttonFavorito.setTag(0);
-        holder.buttonFavorito.setImageResource(android.R.drawable.btn_star_big_off);
+        if (currentUser != null && ruta.getId() != null) {
+            DocumentReference favoriteRef = db.collection("users").document(currentUser.getUid())
+                    .collection("favorites").document(ruta.getId());
+            favoriteRef.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult().exists()) {
+                    holder.buttonFavorito.setImageResource(android.R.drawable.btn_star_big_on);
+                } else {
+                    holder.buttonFavorito.setImageResource(android.R.drawable.btn_star_big_off);
+                }
+            });
 
-        holder.buttonFavorito.setOnClickListener(v -> {
-            int estadoFavorito = (int) holder.buttonFavorito.getTag();
-
-            if (estadoFavorito == 0) {
-                holder.buttonFavorito.setImageResource(android.R.drawable.btn_star_big_on);
-                holder.buttonFavorito.setTag(1);
-                Toast.makeText(context, "Añadido a favoritos", Toast.LENGTH_SHORT).show();
-            } else {
-                holder.buttonFavorito.setImageResource(android.R.drawable.btn_star_big_off);
-                holder.buttonFavorito.setTag(0);
-                Toast.makeText(context, "Eliminado de favoritos", Toast.LENGTH_SHORT).show();
-            }
-        });
+            holder.buttonFavorito.setOnClickListener(v -> {
+                favoriteRef.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult().exists()) {
+                        favoriteRef.delete().addOnSuccessListener(aVoid -> {
+                            holder.buttonFavorito.setImageResource(android.R.drawable.btn_star_big_off);
+                            Toast.makeText(context, "Eliminado de favoritos", Toast.LENGTH_SHORT).show();
+                        });
+                    } else {
+                        favoriteRef.set(ruta).addOnSuccessListener(aVoid -> {
+                            holder.buttonFavorito.setImageResource(android.R.drawable.btn_star_big_on);
+                            Toast.makeText(context, "Añadido a favoritos", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
+            });
+        }
     }
 
     @Override
     public int getItemCount() {
-        return this.misRutas.size();
+        return (misRutas != null) ? misRutas.size() : 0;
     }
-
 
     public class miViewHolder extends RecyclerView.ViewHolder {
         TextView tvNombreRuta, tvDistanciaDificultad;

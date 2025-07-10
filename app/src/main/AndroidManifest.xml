@@ -13,6 +13,9 @@
         android:theme="@style/Theme.ProyectoAppMovil"
         tools:targetApi="31">
         <activity
+            android:name=".FavoritoActivity"
+            android:exported="false" />
+        <activity
             android:name=".SenderismoActivity"
             android:exported="false" />
         <activity
